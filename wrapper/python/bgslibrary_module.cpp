@@ -275,81 +275,87 @@ PYBIND11_MODULE(pybgs, m) {
 
   // CUDA submodule — pybgs.cu.ViBe
   // Input/output are CuPy ndarrays; data never leaves the GPU.
-  py::module_ cu = m.def_submodule("cuda", "CUDA-accelerated algorithms");
+  // py::module_ cu = m.def_submodule("cuda", "CUDA-accelerated algorithms");
 
-  py::class_<cuViBe>(cu, "ViBe")
-      .def(py::init<>())
-      .def(
-          "apply",
-          [](cuViBe &self, py::object img) -> py::object {
-            // Wrap CuPy input as GpuMat — zero-copy, CuPy owns the memory
-            py::dict in_iface =
-                img.attr("__cuda_array_interface__").cast<py::dict>();
-            void *in_ptr = reinterpret_cast<void *>(
-                in_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
-            auto shape = in_iface["shape"].cast<py::tuple>();
-            int h = shape[0].cast<int>(), w = shape[1].cast<int>();
-            int c = shape.size() >= 3 ? shape[2].cast<int>() : 1;
-            size_t in_step = static_cast<size_t>(w * c);
-            if (in_iface.contains("strides") &&
-                !py::object(in_iface["strides"]).is_none()) {
-              auto strides = in_iface["strides"].cast<py::tuple>();
-              if (strides.size() > 0)
-                in_step = strides[0].cast<size_t>();
-            }
-            cv::cuda::GpuMat gpu_in(h, w, c == 1 ? CV_8UC1 : CV_8UC3, in_ptr,
-                                    in_step);
+  //   py::class_<cuViBe>(cu, "ViBe")
+  //       .def(py::init<>())
+  //       .def(
+  //           "apply",
+  //           [](cuViBe &self, py::object img) -> py::object {
+  //             // Wrap CuPy input as GpuMat — zero-copy, CuPy owns the memory
+  //             py::dict in_iface =
+  //                 img.attr("__cuda_array_interface__").cast<py::dict>();
+  //             void *in_ptr = reinterpret_cast<void *>(
+  //                 in_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
+  //             auto shape = in_iface["shape"].cast<py::tuple>();
+  //             int h = shape[0].cast<int>(), w = shape[1].cast<int>();
+  //             int c = shape.size() >= 3 ? shape[2].cast<int>() : 1;
+  //             size_t in_step = static_cast<size_t>(w * c);
+  //             if (in_iface.contains("strides") &&
+  //                 !py::object(in_iface["strides"]).is_none()) {
+  //               auto strides = in_iface["strides"].cast<py::tuple>();
+  //               if (strides.size() > 0)
+  //                 in_step = strides[0].cast<size_t>();
+  //             }
+  //             cv::cuda::GpuMat gpu_in(h, w, c == 1 ? CV_8UC1 : CV_8UC3,
+  //             in_ptr,
+  //                                     in_step);
 
-            cv::cuda::GpuMat gpu_out = self.apply(gpu_in);
+  //             cv::cuda::GpuMat gpu_out = self.apply(gpu_in);
 
-            // Allocate CuPy output and copy into it via GpuMat::copyTo
-            py::module_ cupy = py::module_::import("cupy");
-            int out_c = gpu_out.channels();
-            py::object out_arr =
-                out_c > 1
-                    ? cupy.attr("empty")(
-                          py::make_tuple(gpu_out.rows, gpu_out.cols, out_c),
-                          "uint8")
-                    : cupy.attr("empty")(
-                          py::make_tuple(gpu_out.rows, gpu_out.cols), "uint8");
-            py::dict out_iface =
-                out_arr.attr("__cuda_array_interface__").cast<py::dict>();
-            void *out_ptr = reinterpret_cast<void *>(
-                out_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
-            size_t row_bytes =
-                static_cast<size_t>(gpu_out.cols) * gpu_out.elemSize();
-            cv::cuda::GpuMat dst(gpu_out.rows, gpu_out.cols, gpu_out.type(),
-                                 out_ptr, row_bytes);
-            gpu_out.copyTo(dst);
-            return out_arr;
-          },
-          py::arg("img"),
-          "Apply background subtraction; img is a CuPy uint8 ndarray (H,W,3).")
-      .def(
-          "getBackgroundModel",
-          [](cuViBe &self) -> py::object {
-            cv::cuda::GpuMat gpu_bg = self.getBackgroundModel();
-            if (gpu_bg.empty())
-              return py::none();
-            py::module_ cupy = py::module_::import("cupy");
-            int c = gpu_bg.channels();
-            py::object out_arr =
-                c > 1
-                    ? cupy.attr("empty")(
-                          py::make_tuple(gpu_bg.rows, gpu_bg.cols, c), "uint8")
-                    : cupy.attr("empty")(
-                          py::make_tuple(gpu_bg.rows, gpu_bg.cols), "uint8");
-            py::dict out_iface =
-                out_arr.attr("__cuda_array_interface__").cast<py::dict>();
-            void *out_ptr = reinterpret_cast<void *>(
-                out_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
-            size_t row_bytes =
-                static_cast<size_t>(gpu_bg.cols) * gpu_bg.elemSize();
-            cv::cuda::GpuMat dst(gpu_bg.rows, gpu_bg.cols, gpu_bg.type(),
-                                 out_ptr, row_bytes);
-            gpu_bg.copyTo(dst);
-            return out_arr;
-          },
-          "Returns background model as a CuPy ndarray, or None if not yet "
-          "initialized.");
+  //             // Allocate CuPy output and copy into it via GpuMat::copyTo
+  //             py::module_ cupy = py::module_::import("cupy");
+  //             int out_c = gpu_out.channels();
+  //             py::object out_arr =
+  //                 out_c > 1
+  //                     ? cupy.attr("empty")(
+  //                           py::make_tuple(gpu_out.rows, gpu_out.cols,
+  //                           out_c), "uint8")
+  //                     : cupy.attr("empty")(
+  //                           py::make_tuple(gpu_out.rows, gpu_out.cols),
+  //                           "uint8");
+  //             py::dict out_iface =
+  //                 out_arr.attr("__cuda_array_interface__").cast<py::dict>();
+  //             void *out_ptr = reinterpret_cast<void *>(
+  //                 out_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
+  //             size_t row_bytes =
+  //                 static_cast<size_t>(gpu_out.cols) * gpu_out.elemSize();
+  //             cv::cuda::GpuMat dst(gpu_out.rows, gpu_out.cols,
+  //             gpu_out.type(),
+  //                                  out_ptr, row_bytes);
+  //             gpu_out.copyTo(dst);
+  //             return out_arr;
+  //           },
+  //           py::arg("img"),
+  //           "Apply background subtraction; img is a CuPy uint8 ndarray
+  //           (H,W,3).")
+  //       .def(
+  //           "getBackgroundModel",
+  //           [](cuViBe &self) -> py::object {
+  //             cv::cuda::GpuMat gpu_bg = self.getBackgroundModel();
+  //             if (gpu_bg.empty())
+  //               return py::none();
+  //             py::module_ cupy = py::module_::import("cupy");
+  //             int c = gpu_bg.channels();
+  //             py::object out_arr =
+  //                 c > 1
+  //                     ? cupy.attr("empty")(
+  //                           py::make_tuple(gpu_bg.rows, gpu_bg.cols, c),
+  //                           "uint8")
+  //                     : cupy.attr("empty")(
+  //                           py::make_tuple(gpu_bg.rows, gpu_bg.cols),
+  //                           "uint8");
+  //             py::dict out_iface =
+  //                 out_arr.attr("__cuda_array_interface__").cast<py::dict>();
+  //             void *out_ptr = reinterpret_cast<void *>(
+  //                 out_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
+  //             size_t row_bytes =
+  //                 static_cast<size_t>(gpu_bg.cols) * gpu_bg.elemSize();
+  //             cv::cuda::GpuMat dst(gpu_bg.rows, gpu_bg.cols, gpu_bg.type(),
+  //                                  out_ptr, row_bytes);
+  //             gpu_bg.copyTo(dst);
+  //             return out_arr;
+  //           },
+  //           "Returns background model as a CuPy ndarray, or None if not yet "
+  //           "initialized.");
 }

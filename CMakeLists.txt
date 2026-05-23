@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(bgslibrary VERSION 3.3.0 LANGUAGES CXX CUDA)
+project(bgslibrary VERSION 3.3.0 LANGUAGES CXX)
 
 include(CheckCXXCompilerFlag)
 
@@ -135,15 +135,15 @@ endif()
 
 find_package(Eigen3 REQUIRED)
 
-find_package(CUDAToolkit REQUIRED)
-if(CUDAToolkit_FOUND)
-  message(STATUS "")
-  message(STATUS "CUDA Toolkit status:")
-  message(STATUS "    version: ${CUDAToolkit_VERSION}")
-  message(STATUS "    libraries: ${CUDAToolkit_LIBRARIES}")
-  message(STATUS "    include path: ${CUDAToolkit_INCLUDE_DIRS}\n")
-endif()
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-Wno-sign-promo")
+# find_package(CUDAToolkit REQUIRED)
+# if(CUDAToolkit_FOUND)
+#   message(STATUS "")
+#   message(STATUS "CUDA Toolkit status:")
+#   message(STATUS "    version: ${CUDAToolkit_VERSION}")
+#   message(STATUS "    libraries: ${CUDAToolkit_LIBRARIES}")
+#   message(STATUS "    include path: ${CUDAToolkit_INCLUDE_DIRS}\n")
+# endif()
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-Wno-sign-promo")
 
 if(BGS_PYTHON_SUPPORT)
   #if(WIN32)
@@ -209,7 +209,7 @@ file(GLOB_RECURSE utils_inc bgslibrary/utils/*.h bgslibrary/utils/*.hpp)
 file(GLOB_RECURSE tools_src bgslibrary/tools/*.cpp bgslibrary/tools/*.c)
 file(GLOB_RECURSE tools_inc bgslibrary/tools/*.h bgslibrary/tools/*.hpp)
 
-file(GLOB_RECURSE bgs_src bgslibrary/algorithms/*.cpp bgslibrary/algorithms/*.c bgslibrary/algorithms/*.cu)
+file(GLOB_RECURSE bgs_src bgslibrary/algorithms/*.cpp bgslibrary/algorithms/*.c)
 file(GLOB_RECURSE bgs_inc bgslibrary/algorithms/*.h bgslibrary/algorithms/*.hpp)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -238,7 +238,7 @@ if(BGS_CORE_STATIC)
 else()
   message(STATUS "Bulding bgslibrary_core SHARED")
   add_library(bgslibrary_core SHARED ${bgs_src} ${tools_src} ${utils_src} ${bgs_inc} ${tools_inc} ${utils_inc})
-  target_link_libraries(bgslibrary_core ${OpenCV_LIBS} ${CUDAToolkit_LIBRARIES})
+  target_link_libraries(bgslibrary_core ${OpenCV_LIBS})
   # generates the export header bgslibrary_core_EXPORTS.h automatically
   include(GenerateExportHeader)
   GENERATE_EXPORT_HEADER(bgslibrary_core

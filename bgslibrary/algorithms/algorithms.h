@@ -43,7 +43,7 @@
 #include "VuMeter.h"
 #include "WeightedMovingMean.h"
 #include "WeightedMovingVariance.h"
-#include "cuViBe.h"
+// #include "cuViBe.h"
 
 // #include "_template_/MyBGS.h"
 
