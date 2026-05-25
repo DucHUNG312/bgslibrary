@@ -3,14 +3,6 @@
 #include <memory>
 #include <vector>
 
-#define CUDA_Check(func)                                                       \
-  {                                                                            \
-    cudaError_t ret = func;                                                    \
-    if (ret != cudaSuccess) {                                                  \
-      CV_Assert(false);                                                        \
-    }                                                                          \
-  }
-
 namespace bgslibrary {
 namespace algorithms {
 namespace {
@@ -350,9 +342,8 @@ cuViBe::cuViBe() : model(new cuViBeModel(), &cuViBeModel_free) {}
 cuViBe::~cuViBe() {}
 
 void cuViBe::process(const cv::cuda::GpuMat &img_input,
-                     cv::cuda::GpuMat &img_output,
-                     cv::cuda::GpuMat &img_bgmodel) {
-  init(img_input, img_output, img_bgmodel);
+                     cv::cuda::GpuMat &img_output) {
+  init(img_input, img_output);
 
   if (img_input.empty()) {
     return;

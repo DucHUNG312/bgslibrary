@@ -20,14 +20,22 @@
 #define cubgs_register(x) static cuBGS_Register<x> curegister_##x(quote(x))
 #endif
 
+#define CUDA_Check(func)                                                       \
+  {                                                                            \
+    cudaError_t ret = func;                                                    \
+    if (ret != cudaSuccess) {                                                  \
+      CV_Assert(false);                                                        \
+    }                                                                          \
+  }
+
 namespace bgslibrary {
 namespace algorithms {
 
 class cuIBGS : public ILoadSaveConfig {
 protected:
   bool first_time = true;
-  cv::cuda::GpuMat img_background;
   cv::cuda::GpuMat img_foreground;
+  cv::cuda::GpuMat img_background;
   std::string algorithm_name;
 
 public:
@@ -36,25 +44,17 @@ public:
   virtual ~cuIBGS() {}
 
   cv::cuda::GpuMat apply(const cv::cuda::GpuMat &img_input) {
-    cv::cuda::GpuMat _img_foreground, _img_background;
-    process(img_input, _img_foreground, _img_background);
-    _img_background.copyTo(img_background);
-    return _img_foreground;
+    process(img_input, img_foreground);
+    return img_foreground;
   }
 
-  // difference naming style since I dont want to change the python API
-  cv::cuda::GpuMat getBackgroundModel() { return img_background; }
-
-  void init(const cv::cuda::GpuMat &img_input, cv::cuda::GpuMat &img_outfg,
-            cv::cuda::GpuMat &img_outbg) {
+  void init(const cv::cuda::GpuMat &img_input, cv::cuda::GpuMat &img_outfg) {
     CV_Assert(img_input.empty() == false);
     img_outfg = cv::cuda::GpuMat(img_input.size(), CV_8UC1, cv::Scalar(0));
-    img_outbg = cv::cuda::GpuMat(img_input.size(), CV_8UC3, cv::Scalar(0));
   }
 
   virtual void process(const cv::cuda::GpuMat &img_input,
-                       cv::cuda::GpuMat &img_output,
-                       cv::cuda::GpuMat &img_bgmodel) = 0;
+                       cv::cuda::GpuMat &img_output) = 0;
 
   virtual std::ostream &dump(std::ostream &o) const {
     return o << get_algorithm_name();

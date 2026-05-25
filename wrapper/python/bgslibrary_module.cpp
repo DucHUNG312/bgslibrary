@@ -324,34 +324,7 @@ PYBIND11_MODULE(pybgs, m) {
             return out_arr;
           },
           py::arg("img"),
-          "Apply background subtraction; img is a CuPy uint8 ndarray (H,W,3).")
-      .def(
-          "getBackgroundModel",
-          [](cuViBe &self) -> py::object {
-            cv::cuda::GpuMat gpu_bg = self.getBackgroundModel();
-            if (gpu_bg.empty())
-              return py::none();
-            py::module_ cupy = py::module_::import("cupy");
-            int c = gpu_bg.channels();
-            py::object out_arr =
-                c > 1
-                    ? cupy.attr("empty")(
-                          py::make_tuple(gpu_bg.rows, gpu_bg.cols, c), "uint8")
-                    : cupy.attr("empty")(
-                          py::make_tuple(gpu_bg.rows, gpu_bg.cols), "uint8");
-            py::dict out_iface =
-                out_arr.attr("__cuda_array_interface__").cast<py::dict>();
-            void *out_ptr = reinterpret_cast<void *>(
-                out_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
-            size_t row_bytes =
-                static_cast<size_t>(gpu_bg.cols) * gpu_bg.elemSize();
-            cv::cuda::GpuMat dst(gpu_bg.rows, gpu_bg.cols, gpu_bg.type(),
-                                 out_ptr, row_bytes);
-            gpu_bg.copyTo(dst);
-            return out_arr;
-          },
-          "Returns background model as a CuPy ndarray, or None if not yet "
-          "initialized.");
+          "Apply background subtraction; img is a CuPy uint8 ndarray (H,W,3).");
 
   py::class_<cuFrameDifference>(cu, "FrameDifference")
       .def(py::init<>())
@@ -398,32 +371,5 @@ PYBIND11_MODULE(pybgs, m) {
             return out_arr;
           },
           py::arg("img"),
-          "Apply background subtraction; img is a CuPy uint8 ndarray (H,W,3).")
-      .def(
-          "getBackgroundModel",
-          [](cuFrameDifference &self) -> py::object {
-            cv::cuda::GpuMat gpu_bg = self.getBackgroundModel();
-            if (gpu_bg.empty())
-              return py::none();
-            py::module_ cupy = py::module_::import("cupy");
-            int c = gpu_bg.channels();
-            py::object out_arr =
-                c > 1
-                    ? cupy.attr("empty")(
-                          py::make_tuple(gpu_bg.rows, gpu_bg.cols, c), "uint8")
-                    : cupy.attr("empty")(
-                          py::make_tuple(gpu_bg.rows, gpu_bg.cols), "uint8");
-            py::dict out_iface =
-                out_arr.attr("__cuda_array_interface__").cast<py::dict>();
-            void *out_ptr = reinterpret_cast<void *>(
-                out_iface["data"].cast<py::tuple>()[0].cast<uintptr_t>());
-            size_t row_bytes =
-                static_cast<size_t>(gpu_bg.cols) * gpu_bg.elemSize();
-            cv::cuda::GpuMat dst(gpu_bg.rows, gpu_bg.cols, gpu_bg.type(),
-                                 out_ptr, row_bytes);
-            gpu_bg.copyTo(dst);
-            return out_arr;
-          },
-          "Returns background model as a CuPy ndarray, or None if not yet "
-          "initialized.");
+          "Apply background subtraction; img is a CuPy uint8 ndarray (H,W,3).");
 }

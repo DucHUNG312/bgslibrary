@@ -35,8 +35,8 @@ public:
   cuViBe();
   ~cuViBe();
 
-  void process(const cv::cuda::GpuMat &img_input, cv::cuda::GpuMat &img_output,
-               cv::cuda::GpuMat &img_bgmodel) override;
+  void process(const cv::cuda::GpuMat &img_input,
+               cv::cuda::GpuMat &img_output) override;
 
 private:
   void save_config(cv::FileStorage &fs);

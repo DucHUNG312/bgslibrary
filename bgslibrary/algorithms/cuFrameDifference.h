@@ -6,15 +6,13 @@ namespace bgslibrary {
 namespace algorithms {
 class cuFrameDifference : public cuIBGS {
 private:
-  bool enableThreshold;
   int threshold;
 
 public:
   cuFrameDifference();
   ~cuFrameDifference();
 
-  void process(const cv::cuda::GpuMat &img_input, cv::cuda::GpuMat &img_output,
-               cv::cuda::GpuMat &img_bgmodel);
+  void process(const cv::cuda::GpuMat &img_input, cv::cuda::GpuMat &img_output);
 
 private:
   void save_config(cv::FileStorage &fs);
