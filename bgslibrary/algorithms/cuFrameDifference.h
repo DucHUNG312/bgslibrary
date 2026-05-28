@@ -1,12 +1,13 @@
 #pragma once
 
 #include "cuIBGS.h"
+#include <optional>
 
 namespace bgslibrary {
 namespace algorithms {
 class cuFrameDifference : public cuIBGS {
 private:
-  int threshold;
+  std::optional<int> threshold;
 
 public:
   cuFrameDifference();

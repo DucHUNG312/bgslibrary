@@ -349,9 +349,15 @@ void cuViBeModel_set_update_factor(
 
 } // namespace
 
-cuViBe::cuViBe() : model(new cuViBeModel(), &cuViBeModel_free) {}
+cuViBe::cuViBe()
+    : cuIBGS(quote(cuViBe)), matching_threshold(DEFAULT_MATCH_THRESH),
+      matching_number(DEFAULT_MATCH_NUM), update_factor(DEFAULT_UPDATE_FACTOR),
+      model(new cuViBeModel(), &cuViBeModel_free) {
+  debug_construction(cuViBe);
+  initLoadSaveConfig(algorithm_name);
+}
 
-cuViBe::~cuViBe() {}
+cuViBe::~cuViBe() { debug_destruction(cuViBe); }
 
 void cuViBe::process(const cv::cuda::GpuMat &img_input,
                      cv::cuda::GpuMat &img_output) {

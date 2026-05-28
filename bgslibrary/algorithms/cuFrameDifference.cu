@@ -48,7 +48,7 @@ void cuFrameDifference_8u_c3r(const cv::cuda::GpuMat &img_input,
 } // namespace
 
 cuFrameDifference::cuFrameDifference()
-    : cuIBGS(quote(cuFrameDifference)), threshold(15) {
+    : cuIBGS(quote(cuFrameDifference)), threshold(8) {
   debug_construction(cuFrameDifference);
   initLoadSaveConfig(algorithm_name);
 }
@@ -69,18 +69,24 @@ void cuFrameDifference::process(const cv::cuda::GpuMat &img_input,
   }
 
   cuFrameDifference_8u_c3r(img_background, img_input, img_foreground,
-                           static_cast<float>(threshold));
+                           static_cast<float>(threshold.value_or(8)));
 
   img_foreground.copyTo(img_output);
   img_input.copyTo(img_background);
 }
 
 void cuFrameDifference::save_config(cv::FileStorage &fs) {
-  fs << "threshold" << threshold;
+  if (threshold.has_value()) {
+    fs << "threshold" << static_cast<int>(threshold.value());
+  }
 }
 
 void cuFrameDifference::load_config(cv::FileStorage &fs) {
-  fs["threshold"] >> threshold;
+  int val;
+  if (!fs["threshold"].empty()) {
+    fs["threshold"] >> val;
+    threshold = static_cast<uint32_t>(val);
+  }
 }
 
 } // namespace algorithms
